@@ -1,8 +1,10 @@
 name: Tag Release
 
 on:
+  pull_request:
+    branches: [release-please]
   push:
-    branches: [master]
+    branches: [release-please]
 
 jobs:
   release:
@@ -13,3 +15,10 @@ jobs:
       RELEASE_TOKEN: ${{ secrets.PUBLIC_RELEASES_TOKEN }}
       RELEASE_ACTOR_GPG_PRIVATE_KEY: ${{ secrets.PUBLIC_RELEASES_GPG_PRIVATE_KEY }}
       RELEASE_ACTOR_GPG_PASSPHRASE: ${{ secrets.PUBLIC_RELEASES_GPG_PASSPHRASE }}
+
+  release_sbom:
+    needs: release
+    if: needs.release.outputs.release_created == 'true'
+    uses: circlefin/circle-public-github-workflows/.github/workflows/attach-release-assets.yaml@v1
+    with:
+      release_tag: ${{ needs.release.outputs.release_tag }}
